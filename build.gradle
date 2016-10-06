@@ -1,0 +1,47 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+apply plugin: 'war'
+
+jar {
+    baseName = 'uploadthing'
+    version = '0.1.0'
+}
+
+war {
+    baseName = 'uploadthing'
+    version =  '0.1.0'
+}
+
+
+bootRun {
+    addResources = true
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile("org.apache.commons:commons-lang3:3.4")
+    compile("org.springframework.boot:spring-boot-starter")
+    compile("org.springframework.boot:spring-boot-starter-jdbc")
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    //compile("org.springframework:spring-jdbc")
+    compile("com.h2database:h2")
+    compile("org.postgresql:postgresql")
+    testCompile("junit:junit")
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+}

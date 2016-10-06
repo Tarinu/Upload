@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:include="fragments/header::header">
+</head>
+<body>
+<nav th:replace="fragments/header::navbar">
+</nav>
+<div class="container">
+    <div class="page-header">
+        <h2>Upload</h2>
+    </div>
+	<div th:if="${message}">
+		<h4 th:text="${message}"/>
+	</div>
+    <form method="POST" enctype="multipart/form-data" th:action="@{/upload}">
+        <div class="form-group">
+            <label for="text">File to upload:</label>
+            <label class="btn btn-primary" for="my-file-selector">
+            <input id="my-file-selector" type="file" name="file" style="display:none;" onchange="$('#upload-file-info').html($(this).val());" />
+            Browse
+            </label>
+            <span class='label label-info' id="upload-file-info"></span>
+            <input type="submit" class="btn btn-default" value="Upload" />
+        </div>
+    </form>
+    <div class="row" style="display: flex; flex-wrap: wrap;">
+        <div class="col lg-4 col-md-4 col-sm-12 col-xs-12" style="display: flex;" th:each="file : ${files}">
+                <div class="panel-body" >
+                    <a class="thumbnail" th:href="${file}">
+                        <img th:src="${file}" />
+                    </a>
+                </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

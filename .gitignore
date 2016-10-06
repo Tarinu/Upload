@@ -1,0 +1,7 @@
+.gradle
+upload-dir
+build
+
+src/main/resources/application.properties
+# Intellij:
+.idea
