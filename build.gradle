@@ -10,18 +10,18 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
-apply plugin: 'war'
+//apply plugin: 'war'
 
 jar {
     baseName = 'uploadthing'
     version = '0.1.0'
 }
-
+/*
 war {
     baseName = 'uploadthing'
     version =  '0.1.0'
 }
-
+*/
 
 bootRun {
     addResources = true
@@ -43,5 +43,5 @@ dependencies {
     compile("com.h2database:h2")
     compile("org.postgresql:postgresql")
     testCompile("junit:junit")
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    //providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 }
