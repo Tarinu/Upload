@@ -37,7 +37,7 @@ public class StorageServiceImpl implements StorageService{
     }
     
     @Override
-    public void store(MultipartFile file) {
+    public void store(MultipartFile file, String location) {
         try {
             logger.info("Checking if file is empty.");
             if (file.isEmpty()) {
@@ -48,7 +48,7 @@ public class StorageServiceImpl implements StorageService{
             newname += file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
             logger.info("New filename: " + newname + ". Trying to save it.");
             Files.copy(file.getInputStream(), this.rootLocation.resolve(newname));
-            fileService.saveFile(new File(file.getOriginalFilename(), rootLocation.toString() + "/" + newname));
+            fileService.saveFile(new File(file.getOriginalFilename(), location + "/files/" + newname));
             logger.info("Saved " + newname);
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);

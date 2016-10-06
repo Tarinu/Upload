@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:include="fragments/header::header">
+</head>
+<body>
+<nav th:replace="fragments/header::navbar">
+</nav>
+<div class="container">
+    <div class="row" style="display: flex; flex-wrap: wrap;">
+        <div class="col lg-4 col-md-4 col-sm-12 col-xs-12" style="display: flex;" th:each="file : ${files}">
+            <div class="panel-body" >
+                <a class="thumbnail" th:href="${file}">
+                    <img th:src="${file}" alt="¯\_(ツ)_/¯"/>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
