@@ -11,13 +11,17 @@ import org.springframework.stereotype.Component;
 public class DbStarter implements ApplicationListener<ContextRefreshedEvent>{
     private JdbcTemplate jdbcTemplate;
     
-    private Logger logger = Logger.getLogger(DbStarter.class);
+    private static final Logger logger = Logger.getLogger(DbStarter.class);
     
     @Autowired
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
     
+    /**
+     * Creates needed database tables at application startup. Using postgres syntax.
+     * @param event does nothing atm, its needed by the interface /shrug
+     */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         logger.info("Create files table");

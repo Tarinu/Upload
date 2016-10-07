@@ -24,16 +24,12 @@ public class StorageServiceImpl implements StorageService{
     private final Path rootLocation;
     private final FileService fileService;
     
-    private final Logger logger = Logger.getLogger(StorageServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(StorageServiceImpl.class);
 
     @Autowired
     public StorageServiceImpl(StorageProperties properties, FileService fileService) {
         this.rootLocation = Paths.get(properties.getLocation());
         this.fileService = fileService;
-    }
-    
-    public Path getRootLocation() {
-        return rootLocation;
     }
     
     @Override
@@ -46,9 +42,10 @@ public class StorageServiceImpl implements StorageService{
             logger.info("Generating new filename.");
             String newname = RandomStringUtils.randomAlphanumeric(8);
             newname += file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
+            
             logger.info("New filename: " + newname + ". Trying to save it.");
             Files.copy(file.getInputStream(), this.rootLocation.resolve(newname));
-            fileService.saveFile(new File(file.getOriginalFilename(), location + "/files/" + newname));
+            fileService.saveFile(new File(newname, location + "/files/" + newname));
             logger.info("Saved " + newname);
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);

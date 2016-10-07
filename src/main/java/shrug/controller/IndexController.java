@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class IndexController {
     
     @RequestMapping("/")
-    String index(){
+    public String index(){
         return "index";
     }
     
     @RequestMapping("/help")
-    String help(){
+    public String help(){
         return "help/help";
     }
 }

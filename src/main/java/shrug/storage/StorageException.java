@@ -3,7 +3,7 @@ package shrug.storage;
 import org.apache.log4j.Logger;
 
 public class StorageException extends RuntimeException {
-    Logger logger = Logger.getLogger(StorageException.class);
+    private static final Logger logger = Logger.getLogger(StorageException.class);
 
     public StorageException(String message) {
         super(message);

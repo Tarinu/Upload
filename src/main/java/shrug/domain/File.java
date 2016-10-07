@@ -1,5 +1,8 @@
 package shrug.domain;
 
+/**
+ * Represents the files in database.
+ */
 public class File {
     private int id;
     private String filename;
