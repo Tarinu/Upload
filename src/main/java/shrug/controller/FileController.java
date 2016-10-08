@@ -10,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import shrug.domain.File;
 import shrug.services.FileService;
@@ -18,8 +17,8 @@ import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller used for uploading pictures and displaying them.
@@ -51,7 +50,10 @@ public class FileController {
                         .fromMethodName(FileController.class, "serveFile", path.getFileName().toString())
                         .build().toString())
                 .collect(Collectors.toList()));*/
-        model.addAttribute("files", fileService.getAllFiles());
+        List<File> files = fileService.getAllFiles();
+        // Sort it newest first
+        Collections.sort(files, (o2, o1) -> o1.getCreated().compareTo(o2.getCreated()));
+        model.addAttribute("files", files);
         return "views/pictures";
     }
     
