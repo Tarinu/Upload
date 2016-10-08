@@ -7,16 +7,14 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 @Component
 public class DbStarter implements ApplicationListener<ContextRefreshedEvent>{
+    
+    @Resource
     private JdbcTemplate jdbcTemplate;
-    
     private static final Logger logger = Logger.getLogger(DbStarter.class);
-    
-    @Autowired
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
     
     /**
      * Creates needed database tables at application startup. Using postgres syntax.
@@ -26,6 +24,11 @@ public class DbStarter implements ApplicationListener<ContextRefreshedEvent>{
     public void onApplicationEvent(ContextRefreshedEvent event) {
         logger.info("Create files table");
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS files(" +
-                "id serial PRIMARY KEY, filename varchar(100), location varchar(150))");
+                "id serial PRIMARY KEY," +
+                "filename varchar(10) not null," +
+                "type varchar(5) not null," +
+                "location varchar(100) not null," +
+                "created timestamp not null default now()" +
+                ")");
     }
 }

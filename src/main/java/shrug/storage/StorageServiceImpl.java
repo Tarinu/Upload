@@ -41,12 +41,13 @@ public class StorageServiceImpl implements StorageService{
             }
             logger.info("Generating new filename.");
             String newname = RandomStringUtils.randomAlphanumeric(8);
-            newname += file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
+            String type = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.')+1);
+            String fullname = newname+"."+type;
             
-            logger.info("New filename: " + newname + ". Trying to save it.");
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(newname));
-            fileService.saveFile(new File(newname, location + "/files/" + newname));
-            logger.info("Saved " + newname);
+            logger.info("New filename: " + fullname + ". Trying to save it.");
+            Files.copy(file.getInputStream(), this.rootLocation.resolve(fullname));
+            fileService.saveFile(new File(newname, type, location + "/files/" + fullname));
+            logger.info("Saved " + fullname);
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
         }

@@ -48,7 +48,7 @@ public class FileController {
                                 .build().toString())
                 .collect(Collectors.toList()));
 
-        return "upload/pictures";
+        return "views/pictures";
     }
     
     /**
@@ -56,6 +56,7 @@ public class FileController {
      * @param filename Name of the file that's requested to be displayed.
      * @return Response to the request with right header and body.
      */
+    //{variable:regex} so in this case it must have at least 1 char
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
@@ -110,6 +111,12 @@ public class FileController {
         }
         url.append(contextPath);
         return url.toString();
+    }
+    
+    @GetMapping("/img/{filename:.+}")
+    public String showImage(@PathVariable String filename){
+        
+        return "views/image";
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)

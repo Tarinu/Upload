@@ -15,7 +15,7 @@ import shrug.storage.StorageService;
 @EnableConfigurationProperties(StorageProperties.class)
 public class Application extends SpringBootServletInitializer{
     
-    private Logger logger = Logger.getLogger(Application.class);
+    private static final Logger logger = Logger.getLogger(Application.class);
     
     public static void main(String[] args){
         SpringApplication.run(Application.class, args);

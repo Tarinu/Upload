@@ -13,6 +13,6 @@ public class IndexController {
     
     @RequestMapping("/help")
     public String help(){
-        return "help/help";
+        return "views/help";
     }
 }
