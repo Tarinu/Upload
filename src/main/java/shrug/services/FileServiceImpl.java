@@ -21,28 +21,28 @@ public class FileServiceImpl implements FileService{
     @Override
     public List<File> getAllFiles() {
         String sql = "SELECT id, filename, type, location, created FROM files";
-        logger.info("Query: " + sql);
+        logger.info("Query = " + sql);
         return jdbcTemplate.query(sql, new FileRowMapper());
     }
     
     @Override
     public File getFile(int id) {
         String sql = "SELECT id, filename, type, location, created FROM files WHERE id = ?";
-        logger.info("Query: " + sql);
-        return jdbcTemplate.queryForObject(sql, new FileRowMapper());
+        logger.info("Query = " + sql + "; id = " + id);
+        return jdbcTemplate.queryForObject(sql, new Object[]{id}, new FileRowMapper());
     }
     
     @Override
     public File getFileByFilename(String filename) {
         String sql = "SELECT id, filename, type, location, created FROM files WHERE filename = ?";
-        logger.info("Query: " + sql);
-        return jdbcTemplate.queryForObject(sql, new FileRowMapper());
+        logger.info("Query = " + sql + "; filename = " + filename);
+        return jdbcTemplate.queryForObject(sql, new Object[]{filename}, new FileRowMapper());
     }
     
     @Override
     public void saveFile(File file) {
         String sql = "INSERT INTO files(filename, type, location) VALUES (?, ?, ?)";
-        logger.info("Query: " + sql);
+        logger.info("Query = " + sql);
         jdbcTemplate.update(sql, file.getFilename(), file.getType(), file.getLocation());
     }
 }

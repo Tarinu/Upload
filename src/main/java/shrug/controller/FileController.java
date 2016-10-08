@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import shrug.domain.File;
+import shrug.services.FileService;
 import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 
@@ -25,29 +27,31 @@ import java.util.stream.Collectors;
 @Controller
 public class FileController {
     private final StorageService storageService;
+    private final FileService fileService;
     private static final Logger logger = Logger.getLogger(FileController.class);
     private final List<String> allowedTypes = Arrays.asList("image/jpeg", "image/pjpeg", "image/png", "image/gif");
 
     @Autowired
-    public FileController(StorageService storageService) {
+    public FileController(StorageService storageService, FileService fileService) {
         this.storageService = storageService;
+        this.fileService = fileService;
     }
     
     /**
      * Adds all the uploaded files into the model's "files" key then renders the right HTML page with it.
-     * @param model Model that is used to store all the files.
+     * @param model Model that is used to store all the files. It uses key:value.
      * @return String of the location of the HTML page.
      */
     @GetMapping("/pictures")
     public String listUploadedFiles(Model model) {
-        model.addAttribute("files", storageService
+        /*model.addAttribute("files", storageService
                 .loadAll()
                 .map(path ->
-                        MvcUriComponentsBuilder
-                                .fromMethodName(FileController.class, "serveFile", path.getFileName().toString())
-                                .build().toString())
-                .collect(Collectors.toList()));
-
+                    MvcUriComponentsBuilder
+                        .fromMethodName(FileController.class, "serveFile", path.getFileName().toString())
+                        .build().toString())
+                .collect(Collectors.toList()));*/
+        model.addAttribute("files", fileService.getAllFiles());
         return "views/pictures";
     }
     
@@ -56,7 +60,7 @@ public class FileController {
      * @param filename Name of the file that's requested to be displayed.
      * @return Response to the request with right header and body.
      */
-    //{variable:regex} so in this case it must have at least 1 char
+    //{variable:regex} so in this case it must have at least 1 random char
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
@@ -113,9 +117,16 @@ public class FileController {
         return url.toString();
     }
     
+    /**
+     * Display a page with single image
+     * @param filename Name of the file
+     * @param model Model to store the info about it
+     * @return view with file info in it
+     */
     @GetMapping("/img/{filename:.+}")
-    public String showImage(@PathVariable String filename){
-        
+    public String showImage(@PathVariable String filename, Model model){
+        File file = fileService.getFileByFilename(filename);
+        model.addAttribute(file);
         return "views/image";
     }
 

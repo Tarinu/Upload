@@ -1,6 +1,5 @@
 package shrug.services;
 
-import org.springframework.data.repository.CrudRepository;
 import shrug.domain.File;
 
 import java.util.List;

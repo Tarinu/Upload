@@ -7,10 +7,10 @@
 </nav>
 <div class="container">
     <div class="row" style="display: flex; flex-wrap: wrap;">
-        <div class="col lg-4 col-md-4 col-sm-12 col-xs-12" style="display: flex;" th:each="file : ${files}">
+        <div class="col lg-3 col-md-3 col-sm-6 col-xs-12" th:each="file : ${files}">
             <div class="panel-body" >
-                <a class="thumbnail" th:href="${file}">
-                    <img th:src="${file}" alt="¯\_(ツ)_/¯"/>
+                <a class="thumbnail" th:href="@{/img/}+${file.filename}">
+                    <img class="img-responsive" th:src="${file.location}" style="max-height:220px"  alt="¯\_(ツ)_/¯"/>
                 </a>
             </div>
         </div>
