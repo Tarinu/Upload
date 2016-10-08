@@ -34,10 +34,6 @@ public class File {
         return filename;
     }
     
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-    
     public String getLocation() {
         return location;
     }
@@ -46,15 +42,8 @@ public class File {
         return type;
     }
     
-    public void setType(String type) {
-        this.type = type;
-    }
-    
     public Timestamp getCreated() {
         return created;
     }
-    
-    public void setCreated(Timestamp created) {
-        this.created = created;
-    }
+
 }

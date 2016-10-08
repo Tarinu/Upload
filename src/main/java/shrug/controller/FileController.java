@@ -43,7 +43,8 @@ public class FileController {
      */
     @GetMapping("/pictures")
     public String listUploadedFiles(Model model) {
-        /*model.addAttribute("files", storageService
+        /* Old way of reading in all the files from the disc. Leaving it here for educational purposes.
+        model.addAttribute("files", storageService
                 .loadAll()
                 .map(path ->
                     MvcUriComponentsBuilder
@@ -120,18 +121,10 @@ public class FileController {
     }
     
     /**
-     * Display a page with single image
-     * @param filename Name of the file
-     * @param model Model to store the info about it
-     * @return view with file info in it
+     * Handles the exception when a file is not found.
+     * @param exc info about exception
+     * @return creates a header with status code 404
      */
-    @GetMapping("/img/{filename:.+}")
-    public String showImage(@PathVariable String filename, Model model){
-        File file = fileService.getFileByFilename(filename);
-        model.addAttribute(file);
-        return "views/image";
-    }
-
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
