@@ -7,8 +7,18 @@
 </nav>
 <div class="container">
     <div class="panel panel-default">
-        <div class="panel-body">
-            <img class="img-responsive center-block" th:src="${file.location}" />
+        <div class="panel-body" th:switch="${file.type}">
+            <div th:case="webm" align="center" class="embed-responsive embed-responsive-16by9">
+                <video autoplay="autoplay" loop="loop" muted="muted">
+                    <source th:src="${file.location}" type="video/webm" class="embed-responsive-item"/>
+                </video>
+            </div>
+            <div th:case="mp4" align="center" class="embed-responsive embed-responsive-16by9">
+                <video autoplay="autoplay" loop="loop" muted="muted">
+                    <source th:src="${file.location}" type="video/mp4" />
+                </video>
+            </div>
+            <img th:case="*" class="img-responsive center-block" th:src="${file.location}"/>
         </div>
     </div>
     <div class="panel-group">

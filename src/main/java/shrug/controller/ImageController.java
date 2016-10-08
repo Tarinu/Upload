@@ -40,6 +40,12 @@ public class ImageController {
         return "views/image";
     }
     
+    /**
+     *
+     * @param com Comment
+     * @param filename Filename from url
+     * @return redirects back to the image page
+     */
     @PostMapping("/img/{filename:.+}")
     public String postComment(@RequestParam("comment") String com, @PathVariable String filename){
         Comment comment = new Comment(com);

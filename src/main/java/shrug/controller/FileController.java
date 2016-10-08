@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +18,7 @@ import shrug.services.file.FileService;
 import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +31,7 @@ public class FileController {
     private final StorageService storageService;
     private final FileService fileService;
     private static final Logger logger = Logger.getLogger(FileController.class);
-    private final List<String> allowedTypes = Arrays.asList("image/jpeg", "image/pjpeg", "image/png", "image/gif");
+    private final List<String> allowedTypes = Arrays.asList("image/jpeg", "image/pjpeg", "image/png", "image/gif", "video/webm", "video/mp4");
 
     @Autowired
     public FileController(StorageService storageService, FileService fileService) {
@@ -66,8 +69,16 @@ public class FileController {
     //{variable:regex} so in this case it must have at least 1 random char
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename, HttpServletResponse response) {
         Resource file = storageService.loadAsResource(filename);
+        HttpHeaders headers = new HttpHeaders();
+        String type = file.getFilename().substring(file.getFilename().lastIndexOf('.')+1).toLowerCase();
+        if(type.equals("webm") || type.equals("mp4")){
+            response.setContentType("video/" + type);
+            headers.setContentType(MediaType.parseMediaType("video/" + type));
+            response.setHeader("Content-Disposition", "filename=\""+file.getFilename()+"\"");
+            return new ResponseEntity<>(file, headers, HttpStatus.OK);
+        }
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, /*"attachment;"*/ "filename=\""+file.getFilename()+"\"")

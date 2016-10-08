@@ -9,8 +9,18 @@
     <div class="row" style="display: flex; flex-wrap: wrap;">
         <div class="col lg-3 col-md-3 col-sm-6 col-xs-12" th:each="file : ${files}">
             <div class="panel-body" >
-                <a class="thumbnail" th:href="@{/img/}+${file.filename}">
-                    <img class="img-responsive" th:src="${file.location}" style="max-height:220px"  alt="¯\_(ツ)_/¯"/>
+                <a class="thumbnail" th:href="@{/img/}+${file.filename}" th:switch="${file.type}">
+                    <div th:case="webm" align="center" class="embed-responsive embed-responsive-16by9">
+                        <video autoplay="autoplay" loop="loop" muted="muted">
+                            <source th:src="${file.location}" type="video/webm" class="embed-responsive-item"/>
+                        </video>
+                    </div>
+                    <div th:case="mp4" align="center" class="embed-responsive embed-responsive-16by9">
+                        <video autoplay="autoplay" loop="loop" muted="muted">
+                            <source th:src="${file.location}" type="video/mp4" />
+                        </video>
+                    </div>
+                    <img th:case="*" class="img-responsive" th:src="${file.location}" style="max-height:220px"  alt="¯\_(ツ)_/¯"/>
                 </a>
             </div>
         </div>
