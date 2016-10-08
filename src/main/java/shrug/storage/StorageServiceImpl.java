@@ -39,6 +39,7 @@ public class StorageServiceImpl implements StorageService{
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
             logger.info("Generating new filename.");
+            //todo check if the name is already in use
             String newname = RandomStringUtils.randomAlphanumeric(8);
             String type = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.')+1);
             String fullname = newname+"."+type;

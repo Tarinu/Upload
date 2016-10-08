@@ -69,16 +69,8 @@ public class FileController {
     //{variable:regex} so in this case it must have at least 1 random char
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename, HttpServletResponse response) {
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         Resource file = storageService.loadAsResource(filename);
-        HttpHeaders headers = new HttpHeaders();
-        String type = file.getFilename().substring(file.getFilename().lastIndexOf('.')+1).toLowerCase();
-        if(type.equals("webm") || type.equals("mp4")){
-            response.setContentType("video/" + type);
-            headers.setContentType(MediaType.parseMediaType("video/" + type));
-            response.setHeader("Content-Disposition", "filename=\""+file.getFilename()+"\"");
-            return new ResponseEntity<>(file, headers, HttpStatus.OK);
-        }
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, /*"attachment;"*/ "filename=\""+file.getFilename()+"\"")

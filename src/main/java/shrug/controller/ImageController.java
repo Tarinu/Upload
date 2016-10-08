@@ -48,6 +48,7 @@ public class ImageController {
      */
     @PostMapping("/img/{filename:.+}")
     public String postComment(@RequestParam("comment") String com, @PathVariable String filename){
+        //todo dont allow empty strings to be sent
         Comment comment = new Comment(com);
         comment.setPicture_id(fileService.getFileByFilename(filename).getId());
         commentService.saveCommentWithoutUsername(comment);
