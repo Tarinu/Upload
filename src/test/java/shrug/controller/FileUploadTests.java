@@ -1,10 +1,10 @@
 package shrug.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.BeforeClass;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import shrug.domain.File;
-import shrug.services.FileService;
+import shrug.services.file.FileService;
 import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 import org.hamcrest.Matchers;

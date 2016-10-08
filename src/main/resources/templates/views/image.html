@@ -6,7 +6,43 @@
 <nav th:replace="fragments/header::navbar">
 </nav>
 <div class="container">
-    <img class="img-responsive center-block img-thumbnail" th:src="${file.location}" />
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <img class="img-responsive center-block" th:src="${file.location}" />
+        </div>
+    </div>
+    <div class="panel-group">
+  	  	<div class="panel panel-default">
+    		<div class="panel-heading">
+      		  	<h4 class="panel-title">
+                    <a data-toggle="collapse" href="#collapse">Comments</a>
+      		  	</h4>
+   		 	</div>
+    		<div id="collapse" class="panel-collapse collapse">
+      		  	<ul class="list-group">
+        			<li class="list-group-item">
+                        <div class="panel panel-default" th:each="comment: ${comments}">
+                            <div class="panel-heading">
+                                <h3 class="panel-title" th:text="${comment.username}"></h3>
+                            </div>
+                            <div class="panel-body" style="text:word-wrap" th:text="${comment.comment}"></div>
+                            <div class="panel-footer" th:text="${#dates.format(comment.timestamp, 'dd MMMM yyyy HH:mm:ss')}"></div>
+                        </div>
+        			</li>
+				</ul>
+    		</div>
+  	  	</div>
+	</div>
+    <div class="form-group">
+        <div class="col-lg-5 col-cs-offset-5">
+            <form th:action="@{/img/}+${file.filename}" th:object="${comment}" method="POST">
+                <label for="comment">Comment:</label>
+                <textarea class="form-control" rows="5" id="comment" name="comment"></textarea>
+                <br />
+                <input type="submit" class="btn btn-primary" value="comment" />
+            </form>
+        </div>
+    </div>
 </div>
 </body>
 </html>

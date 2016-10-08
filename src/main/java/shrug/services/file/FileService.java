@@ -1,4 +1,4 @@
-package shrug.services;
+package shrug.services.file;
 
 import shrug.domain.File;
 

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import shrug.domain.File;
-import shrug.services.FileService;
+import shrug.services.file.FileService;
 import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 

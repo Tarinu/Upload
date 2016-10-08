@@ -1,4 +1,4 @@
-package shrug.services;
+package shrug.services.file;
 
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.RowMapper;

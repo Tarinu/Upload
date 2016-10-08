@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 import shrug.domain.File;
-import shrug.services.FileService;
+import shrug.services.file.FileService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -35,7 +35,6 @@ public class StorageServiceImpl implements StorageService{
     @Override
     public void store(MultipartFile file, String location) {
         try {
-            logger.info("Checking if file is empty.");
             if (file.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
@@ -45,7 +44,7 @@ public class StorageServiceImpl implements StorageService{
             String fullname = newname+"."+type;
             
             logger.info("New filename: " + fullname + ". Trying to save it.");
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(fullname));
+            Files.copy(file.getInputStream(), rootLocation.resolve(fullname));
             fileService.saveFile(new File(newname, type, location + "/files/" + fullname));
             logger.info("Saved " + fullname);
         } catch (IOException e) {
