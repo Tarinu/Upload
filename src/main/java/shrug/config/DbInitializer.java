@@ -1,4 +1,4 @@
-package shrug.bootstrap;
+package shrug.config;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationListener;
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component
-public class DbStarter implements ApplicationListener<ContextRefreshedEvent>{
+public class DbInitializer implements ApplicationListener<ContextRefreshedEvent>{
     
     @Resource
     private JdbcTemplate jdbcTemplate;
-    private static final Logger logger = Logger.getLogger(DbStarter.class);
+    private static final Logger logger = Logger.getLogger(DbInitializer.class);
     
     /**
      * Creates needed database tables at application startup. Using postgres syntax.

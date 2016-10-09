@@ -31,6 +31,7 @@ public class FileController {
     private final StorageService storageService;
     private final FileService fileService;
     private static final Logger logger = Logger.getLogger(FileController.class);
+    private static final String fileLocation = "/files/";
     private final List<String> allowedTypes = Arrays.asList("image/jpeg", "image/pjpeg", "image/png", "image/gif", "video/webm", "video/mp4");
 
     @Autowired
@@ -67,7 +68,7 @@ public class FileController {
      * @return Response to the request with right header and body.
      */
     //{variable:regex} so in this case it must have at least 1 random char
-    @GetMapping("/files/{filename:.+}")
+    @GetMapping(fileLocation + "{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         Resource file = storageService.loadAsResource(filename);
@@ -85,18 +86,20 @@ public class FileController {
      * @return Redirects user back to the upload page with flash message
      */
     @PostMapping("/upload")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+    public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
                                    RedirectAttributes redirectAttributes,
                                    HttpServletRequest request) {
-        if(allowedTypes.contains(file.getContentType().toLowerCase())) {
-            logger.info("Uploading file.");
-            storageService.store(file, urlBuilder(request));
-            redirectAttributes.addFlashAttribute("message",
-                    "You successfully uploaded " + file.getOriginalFilename() + "!");
-        }
-        else{
-            redirectAttributes.addFlashAttribute("message",
-                    "Wrong filetype!");
+        List<MultipartFile> fileList = Arrays.asList(files);
+        for(MultipartFile file : fileList) {
+            if (allowedTypes.contains(file.getContentType().toLowerCase())) {
+                logger.info("Uploading file. " + file.getOriginalFilename());
+                storageService.store(file, urlBuilder(request) + fileLocation);
+                redirectAttributes.addFlashAttribute("message",
+                        "You successfully uploaded " + file.getOriginalFilename() + "!");
+            } else {
+                redirectAttributes.addFlashAttribute("message",
+                        "Wrong filetype!");
+            }
         }
         return "redirect:/";
     }

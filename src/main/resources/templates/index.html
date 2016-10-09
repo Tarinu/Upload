@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:include="fragments/header::header">
+<head><th:block th:include="fragments/header::header"></th:block>
+    <script type="text/javascript" th:src="@{/js/upload.js}"></script>
 </head>
 <body>
 <nav th:replace="fragments/header::navbar">
@@ -15,11 +16,12 @@
     <form method="POST" enctype="multipart/form-data" th:action="@{/upload}">
         <div class="form-group">
             <label for="text">File to upload:</label>
-            <label class="btn btn-primary" for="my-file-selector">
-            <input id="my-file-selector" type="file" name="file" style="display:none;" onchange="$('#upload-file-info').html($(this).val());" />
-            Browse
+            <label class="btn btn-primary" for="file-selector">
+            <input id="file-selector" type="file" name="file" style="display:none;" multiple ="multiple" />
+                Browse
             </label>
-            <span class='label label-info' id="upload-file-info"></span>
+            <div id="file-list">
+            </div>
             <input type="submit" class="btn btn-default" value="Upload" />
         </div>
     </form>

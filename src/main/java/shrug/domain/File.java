@@ -1,5 +1,7 @@
 package shrug.domain;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 import java.sql.Timestamp;
 
 /**
@@ -11,6 +13,8 @@ public class File {
     private String type;
     private String location;
     private Timestamp created;
+    // Length of the randomly generated filename
+    public static final int nameLength = 8;
     
     public File(int id, String filename, String type, String location, Timestamp created) {
         this.id = id;
@@ -22,7 +26,7 @@ public class File {
     
     public File(String filename, String type, String location) {
         this.filename = filename;
-        this.location = location;
+        this.location = location + filename + "." + type;
         this.type = type;
     }
     
@@ -45,5 +49,9 @@ public class File {
     public Timestamp getCreated() {
         return created;
     }
-
+    
+    public void setNewFilename(String location){
+        this.filename = RandomStringUtils.randomAlphanumeric(nameLength);
+        this.location = location + filename +"."+ type;
+    }
 }

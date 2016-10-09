@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,7 @@ import shrug.services.file.FileService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,15 +41,23 @@ public class StorageServiceImpl implements StorageService{
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
             logger.info("Generating new filename.");
-            //todo check if the name is already in use
-            String newname = RandomStringUtils.randomAlphanumeric(8);
-            String type = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.')+1);
-            String fullname = newname+"."+type;
-            
-            logger.info("New filename: " + fullname + ". Trying to save it.");
-            Files.copy(file.getInputStream(), rootLocation.resolve(fullname));
-            fileService.saveFile(new File(newname, type, location + "/files/" + fullname));
-            logger.info("Saved " + fullname);
+            File newFile = new File(RandomStringUtils.randomAlphanumeric(File.nameLength),
+                    file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.')+1),
+                    location);
+            logger.info("New filename: " + newFile.getFilename()+"."+newFile.getType() + ". Trying to save it.");
+            while(true) {
+                try {
+                    //todo sync saving the file and inserting to database
+                    fileService.saveFile(newFile);
+                    Files.copy(file.getInputStream(), rootLocation.resolve(newFile.getFilename()+"."+newFile.getType()));
+                    break;
+                } catch (DuplicateKeyException | FileAlreadyExistsException e) {
+                    logger.info("Filename " + newFile.getFilename() + " already in use.");
+                    newFile.setNewFilename(location);
+                    logger.info("New filename: " + newFile.getFilename() + "." + newFile.getType() + ". Trying to save it.");
+                }
+            }
+            logger.info("Saved " + newFile.getFilename()+"."+newFile.getType());
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
         }
