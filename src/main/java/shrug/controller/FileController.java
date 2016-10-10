@@ -19,9 +19,7 @@ import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Controller used for uploading pictures and displaying them.
@@ -80,28 +78,30 @@ public class FileController {
     
     /**
      * Method that handles the upload and displays a flash message if it was successful or not
-     * @param file File that the user wants to upload
-     * @param redirectAttributes Parameter for adding flash message
+     * @param files Array of files that the user wants to upload
      * @param request Information about the request, used for getting the URL
      * @return Redirects user back to the upload page with flash message
      */
     @PostMapping("/upload")
-    public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
-                                   RedirectAttributes redirectAttributes,
-                                   HttpServletRequest request) {
+    @ResponseBody
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile[] files,
+                                                HttpServletRequest request) {
+        //todo redo this as @ResponseBody and write ajax around it
         List<MultipartFile> fileList = Arrays.asList(files);
-        for(MultipartFile file : fileList) {
-            if (allowedTypes.contains(file.getContentType().toLowerCase())) {
-                logger.info("Uploading file. " + file.getOriginalFilename());
-                storageService.store(file, urlBuilder(request) + fileLocation);
-                redirectAttributes.addFlashAttribute("message",
-                        "You successfully uploaded " + file.getOriginalFilename() + "!");
-            } else {
-                redirectAttributes.addFlashAttribute("message",
-                        "Wrong filetype!");
+        List<String> fileNames = new ArrayList<>();
+        for(MultipartFile file : fileList){
+            if (!allowedTypes.contains(file.getContentType().toLowerCase())){
+                logger.info(file.getOriginalFilename() + " not supported.");
+                return new ResponseEntity<>("Unsupported file type on " + file.getOriginalFilename(),
+                        HttpStatus.UNSUPPORTED_MEDIA_TYPE);
             }
+            fileNames.add(file.getOriginalFilename());
         }
-        return "redirect:/";
+        for(MultipartFile file : fileList) {
+            logger.info("Uploading file. " + file.getOriginalFilename());
+            storageService.store(file, urlBuilder(request) + fileLocation);
+        }
+        return new ResponseEntity<>("Successfully uploaded " + String.join(", ", fileNames), HttpStatus.OK);
     }
     
     /**
