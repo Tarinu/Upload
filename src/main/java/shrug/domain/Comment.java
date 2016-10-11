@@ -9,6 +9,9 @@ public class Comment {
     private Timestamp timestamp;
     private int picture_id;
     
+    public Comment() {
+    }
+    
     public Comment(int id, String username, String comment, Timestamp timestamp, int picture_id) {
         this.id = id;
         this.username = username;
@@ -48,5 +51,16 @@ public class Comment {
     
     public void setPicture_id(int picture_id) {
         this.picture_id = picture_id;
+    }
+    
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", comment='" + comment + '\'' +
+                ", timestamp=" + timestamp +
+                ", picture_id=" + picture_id +
+                '}';
     }
 }

@@ -9,7 +9,7 @@ public interface CommentService {
     
     void saveComment(Comment comment);
     
-    void saveCommentWithoutUsername(Comment comment);
+    void saveAnonymousComment(Comment comment);
     
     List<Comment> getAllPictureComments(File file);
 }

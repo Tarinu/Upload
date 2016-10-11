@@ -35,7 +35,7 @@ $(function(){
             var file = new FormData(this);
 
             $.ajax({
-                url: 'upload',
+                url: '/api/upload',
                 type: 'POST',
                 xhr: function() {
                     var myXhr = $.ajaxSettings.xhr();

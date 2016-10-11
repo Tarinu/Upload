@@ -3,14 +3,14 @@ package shrug.controller;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import shrug.domain.File;
@@ -18,7 +18,6 @@ import shrug.services.file.FileService;
 import shrug.storage.StorageFileNotFoundException;
 import shrug.storage.StorageService;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**
@@ -27,7 +26,9 @@ import java.util.*;
 @Controller
 public class FileController {
     private final StorageService storageService;
-    private final FileService fileService;
+    private final RestTemplate restTemplate;
+    @Value("${server.url}")
+    private String url;
     private static final Logger logger = Logger.getLogger(FileController.class);
     private static final String fileLocation = "/files/";
     private final List<String> allowedTypes = Arrays.asList("image/jpeg", "image/pjpeg", "image/png", "image/gif", "video/webm", "video/mp4");
@@ -35,73 +36,61 @@ public class FileController {
     @Autowired
     public FileController(StorageService storageService, FileService fileService) {
         this.storageService = storageService;
-        this.fileService = fileService;
+        this.restTemplate = new RestTemplate();
     }
     
     /**
-     * Adds all the uploaded files into the model's "files" key then renders the right HTML page with it.
+     * Calls rest api to get all the pics then adds them into the model's "files" key and renders the right HTML page with it.
      * @param model Model that is used to store all the files. It uses key:value.
      * @return String of the location of the HTML page.
      */
     @GetMapping("/pictures")
     public String listUploadedFiles(Model model) {
-        /* Old way of reading in all the files from the disc. Leaving it here for educational purposes.
-        model.addAttribute("files", storageService
-                .loadAll()
-                .map(path ->
-                    MvcUriComponentsBuilder
-                        .fromMethodName(FileController.class, "serveFile", path.getFileName().toString())
-                        .build().toString())
-                .collect(Collectors.toList()));*/
-        List<File> files = fileService.getAllFiles();
-        // Sort it newest first
-        Collections.sort(files, (o2, o1) -> o1.getCreated().compareTo(o2.getCreated()));
-        model.addAttribute("files", files);
+        ResponseEntity<File[]> responseEntity = restTemplate.getForEntity(url + "/api/pictures", File[].class);
+        model.addAttribute("files", responseEntity.getBody());
         return "views/pictures";
     }
     
     /**
-     * Serves the client the right picture.
+     * Just a method that redirects api response to the client
      * @param filename Name of the file that's requested to be displayed.
      * @return Response to the request with right header and body.
      */
     //{variable:regex} so in this case it must have at least 1 random char
     @GetMapping(fileLocation + "{filename:.+}")
-    @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-        Resource file = storageService.loadAsResource(filename);
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, /*"attachment;"*/ "filename=\""+file.getFilename()+"\"")
-                .body(file);
+        return restTemplate.getForEntity(url+"/api/files/"+filename, Resource.class);
     }
     
     /**
      * Method that handles the upload and displays a flash message if it was successful or not
      * @param files Array of files that the user wants to upload
-     * @param request Information about the request, used for getting the URL
      * @return Redirects user back to the upload page with flash message
      */
     @PostMapping("/upload")
-    @ResponseBody
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile[] files,
-                                                HttpServletRequest request) {
-        //todo redo this as @ResponseBody and write ajax around it
+    public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
+                                                   RedirectAttributes redirectAttributes) {
+        //todo replace this with REST request
+        if(files[0].getSize() == 0){
+            redirectAttributes.addFlashAttribute("message", "No files selected");
+            return "redirect:/";
+        }
         List<MultipartFile> fileList = Arrays.asList(files);
         List<String> fileNames = new ArrayList<>();
         for(MultipartFile file : fileList){
             if (!allowedTypes.contains(file.getContentType().toLowerCase())){
                 logger.info(file.getOriginalFilename() + " not supported.");
-                return new ResponseEntity<>("Unsupported file type on " + file.getOriginalFilename(),
-                        HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+                redirectAttributes.addFlashAttribute("message", "Unsupported type of file: "+file.getOriginalFilename());
+                return "redirect:/";
             }
             fileNames.add(file.getOriginalFilename());
         }
         for(MultipartFile file : fileList) {
             logger.info("Uploading file. " + file.getOriginalFilename());
-            storageService.store(file, urlBuilder(request) + fileLocation);
+            storageService.store(file, fileLocation);
         }
-        return new ResponseEntity<>("Successfully uploaded " + String.join(", ", fileNames), HttpStatus.OK);
+        redirectAttributes.addFlashAttribute("message", "Successfully uploaded " + String.join(", ", fileNames));
+        return "redirect:/";
     }
     
     /**
@@ -109,7 +98,8 @@ public class FileController {
      * @param request Request used to get different parts of URL
      * @return URL with the structure http://www.hostname.com:port/appname
      */
-    private String urlBuilder(HttpServletRequest request){
+    // Not used but gonna leave it here in case i might need it at some point
+    private String urlBuilder(HttpServletRequest request) {
         String scheme = request.getScheme();             // http
         String serverName = request.getServerName();     // hostname.com
         int serverPort = request.getServerPort();        // 80
@@ -124,15 +114,5 @@ public class FileController {
         }
         url.append(contextPath);
         return url.toString();
-    }
-    
-    /**
-     * Handles the exception when a file is not found.
-     * @param exc info about exception
-     * @return creates a header with status code 404
-     */
-    @ExceptionHandler(StorageFileNotFoundException.class)
-    public ResponseEntity handleStorageFileNotFound(StorageFileNotFoundException exc) {
-        return ResponseEntity.notFound().build();
     }
 }

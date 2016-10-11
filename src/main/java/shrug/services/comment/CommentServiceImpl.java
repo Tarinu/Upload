@@ -27,7 +27,7 @@ public class CommentServiceImpl implements CommentService {
     }
     
     @Override
-    public void saveCommentWithoutUsername(Comment comment) {
+    public void saveAnonymousComment(Comment comment) {
         String sql = "INSERT INTO comments(comment, picture_id) values (?, ?)";
         logger.info("Query = " + sql);
         jdbcTemplate.update(sql, comment.getComment(), comment.getPicture_id());
