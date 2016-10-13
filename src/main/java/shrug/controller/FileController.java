@@ -1,43 +1,33 @@
 package shrug.controller;
 
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import shrug.controller.REST.FileRestController;
 import shrug.domain.File;
-import shrug.services.file.FileService;
-import shrug.storage.StorageFileNotFoundException;
-import shrug.storage.StorageService;
 
-import java.util.*;
+import java.io.IOException;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 /**
- * Controller used for uploading pictures and displaying them.
+ * Pretty much just MVC wrapper around REST api
  */
 @Controller
 public class FileController {
-    private final StorageService storageService;
-    private final RestTemplate restTemplate;
-    @Value("${server.url}")
-    private String url;
+    private final RestTemplate restTemplate = new RestTemplate();
     private static final Logger logger = Logger.getLogger(FileController.class);
     private static final String fileLocation = "/files/";
-    private final List<String> allowedTypes = Arrays.asList("image/jpeg", "image/pjpeg", "image/png", "image/gif", "video/webm", "video/mp4");
-
-    @Autowired
-    public FileController(StorageService storageService, FileService fileService) {
-        this.storageService = storageService;
-        this.restTemplate = new RestTemplate();
-    }
     
     /**
      * Calls rest api to get all the pics then adds them into the model's "files" key and renders the right HTML page with it.
@@ -46,7 +36,7 @@ public class FileController {
      */
     @GetMapping("/pictures")
     public String listUploadedFiles(Model model) {
-        ResponseEntity<File[]> responseEntity = restTemplate.getForEntity(url + "/api/pictures", File[].class);
+        ResponseEntity<File[]> responseEntity = restTemplate.getForEntity(linkTo(FileRestController.class).toString() + "/pictures", File[].class);
         model.addAttribute("files", responseEntity.getBody());
         return "views/pictures";
     }
@@ -59,7 +49,7 @@ public class FileController {
     //{variable:regex} so in this case it must have at least 1 random char
     @GetMapping(fileLocation + "{filename:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-        return restTemplate.getForEntity(url+"/api/files/"+filename, Resource.class);
+        return restTemplate.getForEntity(linkTo(FileRestController.class).toString()+"/files/"+filename, Resource.class);
     }
     
     /**
@@ -69,50 +59,32 @@ public class FileController {
      */
     @PostMapping("/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
-                                                   RedirectAttributes redirectAttributes) {
-        //todo replace this with REST request
-        if(files[0].getSize() == 0){
-            redirectAttributes.addFlashAttribute("message", "No files selected");
-            return "redirect:/";
+                                   RedirectAttributes redirectAttributes) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+        for(MultipartFile file: files){
+            ByteArrayResource byteArrayResource = new ByteArrayResource(file.getBytes()){
+                @Override
+                public String getFilename(){
+                    return file.getOriginalFilename();
+                }
+            };
+            HttpHeaders fileHeaders = new HttpHeaders();
+            fileHeaders.setContentType(MediaType.parseMediaType(file.getContentType()));
+            HttpEntity<ByteArrayResource> entity = new HttpEntity<>(byteArrayResource, fileHeaders);
+            map.add("file", entity);
         }
-        List<MultipartFile> fileList = Arrays.asList(files);
-        List<String> fileNames = new ArrayList<>();
-        for(MultipartFile file : fileList){
-            if (!allowedTypes.contains(file.getContentType().toLowerCase())){
-                logger.info(file.getOriginalFilename() + " not supported.");
-                redirectAttributes.addFlashAttribute("message", "Unsupported type of file: "+file.getOriginalFilename());
-                return "redirect:/";
-            }
-            fileNames.add(file.getOriginalFilename());
+        
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
+        ResponseEntity<String> responseEntity;
+        try {
+            responseEntity = restTemplate.postForEntity(linkTo(FileRestController.class).toString()+"/upload", request, String.class);
+            redirectAttributes.addFlashAttribute("message", responseEntity.getBody());
+        }catch (HttpClientErrorException ex){
+            redirectAttributes.addFlashAttribute("message", ex.getResponseBodyAsString());
         }
-        for(MultipartFile file : fileList) {
-            logger.info("Uploading file. " + file.getOriginalFilename());
-            storageService.store(file, fileLocation);
-        }
-        redirectAttributes.addFlashAttribute("message", "Successfully uploaded " + String.join(", ", fileNames));
         return "redirect:/";
-    }
-    
-    /**
-     * Helps to rebuild the site's URL
-     * @param request Request used to get different parts of URL
-     * @return URL with the structure http://www.hostname.com:port/appname
-     */
-    // Not used but gonna leave it here in case i might need it at some point
-    private String urlBuilder(HttpServletRequest request) {
-        String scheme = request.getScheme();             // http
-        String serverName = request.getServerName();     // hostname.com
-        int serverPort = request.getServerPort();        // 80
-        String contextPath = request.getContextPath();   // /mywebapp
-    
-        // Reconstruct original requesting URL
-        StringBuilder url = new StringBuilder();
-        url.append(scheme).append("://").append(serverName);
-    
-        if (serverPort != 80 && serverPort != 443) {
-            url.append(":").append(serverPort);
-        }
-        url.append(contextPath);
-        return url.toString();
     }
 }

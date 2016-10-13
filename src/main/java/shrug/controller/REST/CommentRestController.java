@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import shrug.domain.Comment;
 import shrug.domain.File;
 import shrug.services.comment.CommentService;
@@ -47,12 +48,22 @@ public class CommentRestController {
     public ResponseEntity<String> postComment(@RequestParam("comment") String com, @PathVariable String filename){
         if(com.isEmpty()){
             logger.info("Comment has empty body");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw  new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Comment has empty body");
         }
         Comment comment = new Comment(com);
         comment.setPicture_id(fileService.getFileByFilename(filename).getId());
         commentService.saveAnonymousComment(comment);
         logger.info("Comment saved for image: " + filename);
         return new ResponseEntity<>("Comment saved", HttpStatus.CREATED);
+    }
+    
+    /**
+     * Handles the exception when BAD_REQUEST(400) gets called
+     * @param ex Information about the exception
+     * @return Response with exception message and status code
+     */
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<String> handleUnsupportedContentType(HttpClientErrorException ex){
+        return new ResponseEntity<>(ex.getStatusText(), ex.getStatusCode());
     }
 }

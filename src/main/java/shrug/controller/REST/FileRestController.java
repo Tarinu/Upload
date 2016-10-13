@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import shrug.domain.File;
 import shrug.services.file.FileService;
@@ -19,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/")
 public class FileRestController {
     private final StorageService storageService;
     private final FileService fileService;
@@ -48,8 +49,8 @@ public class FileRestController {
         for(MultipartFile file : fileList){
             if (!allowedTypes.contains(file.getContentType().toLowerCase())){
                 logger.info(file.getOriginalFilename() + " not supported.");
-                return new ResponseEntity<>("Unsupported file type on " + file.getOriginalFilename(),
-                        HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+                throw new HttpClientErrorException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                        "Unsupported content-type for: "+file.getOriginalFilename());
             }
             fileNames.add(file.getOriginalFilename());
         }
@@ -108,5 +109,15 @@ public class FileRestController {
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
+    }
+    
+    /**
+     * Handles the exception when UNSUPPORTED_MEDIA_TYPE(415) gets called
+     * @param ex Information about the exception
+     * @return Response with exception message and status code
+     */
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<String> handleUnsupportedContentType(HttpClientErrorException ex){
+        return new ResponseEntity<>(ex.getStatusText(), ex.getStatusCode());
     }
 }
