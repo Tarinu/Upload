@@ -22,7 +22,6 @@ function handleFileSelect(e) {
 }
 
 $(function(){
-
     // File upload ajax
     $('form').on('submit', function(e){
         e.preventDefault();
