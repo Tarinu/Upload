@@ -24,7 +24,12 @@ war {
 */
 
 bootRun {
-    args = ["--spring.profiles.active=local"]
+    if(System.getProperty("spring.profiles.active")){
+        systemProperties System.properties
+    }
+    else {
+        args = ["--spring.profiles.active=local"]
+    }
     addResources = true
 }
 
@@ -44,7 +49,7 @@ dependencies {
     //compile("org.springframework.boot:spring-boot-starter-data-jpa")
     //compile("org.springframework:spring-jdbc")
     compile("org.postgresql:postgresql")
-    testCompile("com.h2database:h2")
+    compile("com.h2database:h2")
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     //providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
